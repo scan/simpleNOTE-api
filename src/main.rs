@@ -7,6 +7,7 @@ extern crate diesel_migrations;
 
 mod filters;
 mod handlers;
+mod repository;
 
 use std::env;
 use warp::Filter;
