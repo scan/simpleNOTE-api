@@ -1,0 +1,7 @@
+{
+    "recommendations": [
+        "matklad.rust-analyzer",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg"
+    ]
+}
