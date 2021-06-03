@@ -8,14 +8,16 @@ extern crate diesel_migrations;
 mod filters;
 mod handlers;
 mod repository;
+mod graphql;
 
+use anyhow::Result;
 use std::env;
 use warp::Filter;
 
-// embed_migrations!();
+embed_migrations!();
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     if dotenv::dotenv().is_err() {
         log::warn!("loading environment variabled failed")
     };
@@ -26,7 +28,14 @@ async fn main() {
 
     env_logger::init();
 
-    let api = filters::all();
+    let pool = repository::establish_connection()?;
+
+    {
+        let connection = pool.get()?;
+        embedded_migrations::run_with_output(&connection, &mut std::io::stdout())?;
+    }
+
+    let api = filters::all(pool);
 
     let routes = api
         .with(warp::log("simple_note_api"))
@@ -48,4 +57,6 @@ async fn main() {
         .with(warp::compression::gzip());
 
     warp::serve(routes).run(([0, 0, 0, 0], 8080)).await;
+
+    Ok(())
 }

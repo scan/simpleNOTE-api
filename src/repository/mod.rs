@@ -9,6 +9,8 @@ use anyhow::Result;
 use r2d2::Pool;
 use std::env;
 
+pub use model::{Account, AccountToken, Note};
+
 pub type RepositoryPool = Pool<ConnectionManager<PgConnection>>;
 pub type RepositoryConnection = PooledConnection<ConnectionManager<PgConnection>>;
 
