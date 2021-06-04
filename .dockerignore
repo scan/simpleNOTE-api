@@ -1,0 +1,7 @@
+.editorconfig
+.env*
+.git/
+.github
+.gitignore
+.vscode
+target/
