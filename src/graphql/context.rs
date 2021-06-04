@@ -1,4 +1,4 @@
-use crate::repository::{Account, RepositoryPool};
+use crate::repository::{get_account_by_token, Account, RepositoryPool};
 use enclose::enclose;
 
 #[derive(Clone)]
@@ -15,9 +15,9 @@ impl Context {
             .and_then(enclose!(
                 (pool) | token | {
                     let conn = pool.get().ok()?;
-                    // TODO: Load account by token
+                    let account = get_account_by_token(&conn, token).ok()?;
 
-                    None
+                    Some(account)
                 }
             ));
 
