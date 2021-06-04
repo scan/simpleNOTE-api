@@ -1,5 +1,6 @@
 mod context;
 mod query;
+mod model;
 
 pub use context::Context;
 
