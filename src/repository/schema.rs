@@ -34,8 +34,4 @@ table! {
 joinable!(account_tokens -> accounts (account_id));
 joinable!(notes -> accounts (account_id));
 
-allow_tables_to_appear_in_same_query!(
-    accounts,
-    account_tokens,
-    notes,
-);
+allow_tables_to_appear_in_same_query!(accounts, account_tokens, notes,);

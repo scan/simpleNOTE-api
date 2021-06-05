@@ -1,17 +1,19 @@
+mod account;
 mod model;
 mod schema;
 mod token;
 
+use anyhow::Result;
 use diesel::{
     pg::PgConnection,
     r2d2::{ConnectionManager, PooledConnection},
 };
-use anyhow::Result;
 use r2d2::Pool;
 use std::env;
 
+pub use account::{find_account, insert_account, load_and_verify_account};
 pub use model::{Account, AccountToken, Note};
-pub use token::{get_account_by_token, generate_token};
+pub use token::{generate_token, get_account_by_token};
 
 pub type RepositoryPool = Pool<ConnectionManager<PgConnection>>;
 pub type RepositoryConnection = PooledConnection<ConnectionManager<PgConnection>>;

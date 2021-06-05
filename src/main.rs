@@ -6,9 +6,9 @@ extern crate diesel;
 extern crate diesel_migrations;
 
 mod filters;
+mod graphql;
 mod handlers;
 mod repository;
-mod graphql;
 
 use anyhow::Result;
 use std::env;
