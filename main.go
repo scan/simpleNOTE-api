@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"cloud.google.com/go/firestore"
+	"cloud.google.com/go/datastore"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -38,12 +38,12 @@ func main() {
 		logger.Fatal("GOOGLE_CLOUD_PROJECT must be set")
 	}
 
-	client, err := firestore.NewClient(ctx, projectID)
+	client, err := datastore.NewClient(ctx, projectID)
 	if err != nil {
-		logger.Error("firestore.NewClient", zap.Error(err))
+		logger.Error("datastore.NewClient", zap.Error(err))
 		return
 	}
-	db, err := newFirestoreDB(client, logger)
+	db, err := newDB(client, logger)
 	if err != nil {
 		logger.Error("newFirestoreDB", zap.Error(err))
 	}
@@ -78,7 +78,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"health":"ok"}`))
 }
 
-func handleGraphql(logger *zap.Logger, db *firestoreDB) http.Handler {
+func handleGraphql(logger *zap.Logger, db *datastoreDB) http.Handler {
 	config := Config{
 		Resolvers: &Resolver{logger, db},
 	}

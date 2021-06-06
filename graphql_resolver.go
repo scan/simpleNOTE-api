@@ -8,7 +8,7 @@ import (
 
 type Resolver struct {
 	logger *zap.Logger
-	db     *firestoreDB
+	db     *datastoreDB
 }
 
 func (r *accountResolver) Notes(ctx context.Context, obj *Account, first int, skip int, after *string) (*NoteConnection, error) {
