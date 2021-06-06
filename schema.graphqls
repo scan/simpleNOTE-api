@@ -1,0 +1,55 @@
+
+scalar Time
+
+scalar Cursor
+
+directive @isLoggedIn on FIELD_DEFINITION
+
+type Query {
+    me: Account! @isLoggedIn
+}
+
+type Mutation {
+    createNote(note: NoteInput!): Note! @isLoggedIn
+    editNote(id: ID!, note: NoteInput!): Note! @isLoggedIn
+    removeNote(id: ID!): Boolean! @isLoggedIn
+}
+
+type Account {
+    email: String!
+    notes(first: Int! = 0, skip: Int! = 0, after: Cursor): NoteConnection!
+}
+
+interface Node {
+    id: ID!
+}
+
+type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    endCursor: Cursor!
+    startCursor: Cursor!
+}
+
+type Note implements Node {
+    id: ID!
+    title: String!
+    contents: String
+    createdAt: Time!
+    modifiedAt: Time
+}
+
+type NoteEdge {
+    node: Node!
+    cursor: Cursor!
+}
+
+type NoteConnection {
+    edges: [NoteEdge!]!
+    pageInfo: PageInfo!
+}
+
+input NoteInput {
+    title: String!
+    contents: String
+}

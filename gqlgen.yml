@@ -1,0 +1,17 @@
+schema: schema.graphqls
+exec:
+  filename: graphql_gen.go
+  package: main
+model:
+  filename: graphql_model_gen.go
+  package: main
+resolver:
+  filename: graphql_resolver.go
+  package: main
+  type: Resolver
+omit_slice_element_pointers: false
+
+models:
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.ID
