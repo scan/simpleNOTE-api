@@ -7,6 +7,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
+	"google.golang.org/api/iterator"
 )
 
 type Note struct {
@@ -62,4 +63,32 @@ func (db *firestoreDB) AddNote(ctx context.Context, title string, contents *stri
 		return Note{}, fmt.Errorf("create: %v", err)
 	}
 	return note, nil
+}
+
+func (db *firestoreDB) DeleteNote(ctx context.Context, id string) error {
+	if _, err := db.client.Collection(db.collection).Doc(id).Delete(ctx); err != nil {
+		return fmt.Errorf("firestore: delete: %v", err)
+	}
+	return nil
+}
+
+func (db *firestoreDB) ListNotes(ctx context.Context) ([]*Note, error) {
+	notes := make([]*Note, 0)
+	iter := db.client.Collection(db.collection).Query.OrderBy("CreatedAt", firestore.Desc).Documents(ctx)
+	defer iter.Stop()
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("firestoredb: could not list books: %v", err)
+		}
+		note := &Note{}
+		doc.DataTo(note)
+		db.logger.Info("found note", zap.String("id", note.ID), zap.String("title", note.Title))
+		notes = append(notes, note)
+	}
+
+	return notes, nil
 }
