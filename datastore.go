@@ -10,6 +10,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -46,7 +47,7 @@ func (db *datastoreDB) Close() error {
 }
 
 func (db *datastoreDB) AddNote(ctx context.Context, title string, contents *string) (note Note, err error) {
-	key := datastore.IncompleteKey("Note", nil)
+	key := datastore.NameKey("Note", uuid.New().String(), nil)
 	note = Note{
 		Title:      title,
 		Contents:   contents,
@@ -55,7 +56,7 @@ func (db *datastoreDB) AddNote(ctx context.Context, title string, contents *stri
 		DeletedAt:  nil,
 	}
 
-	key, err = db.client.Put(ctx, key, note)
+	key, err = db.client.Put(ctx, key, &note)
 	if err != nil {
 		return Note{}, errors.Wrap(err, "adding note failed")
 	}

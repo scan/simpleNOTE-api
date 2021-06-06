@@ -12,7 +12,8 @@ require (
 	github.com/didip/tollbooth_chi v0.0.0-20200828173446-a7173453ea21
 	github.com/go-chi/chi v3.3.2+incompatible
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/google/uuid v1.2.0
+	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
@@ -22,5 +23,4 @@ require (
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
 	google.golang.org/api v0.47.0
 	google.golang.org/genproto v0.0.0-20210604141403-392c879c8b08 // indirect
-	google.golang.org/protobuf v1.26.0
 )
