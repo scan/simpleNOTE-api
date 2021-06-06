@@ -40,7 +40,7 @@ type Note implements Node {
 }
 
 type NoteEdge {
-    node: Node!
+    node: Note!
     cursor: Cursor!
 }
 

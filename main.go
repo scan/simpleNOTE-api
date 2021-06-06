@@ -7,6 +7,10 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/blendle/zapdriver"
 	"go.uber.org/zap"
 
@@ -52,11 +56,9 @@ func main() {
 	router.NotFound(handleNotFound)
 	router.Get("/health", handleHealth)
 
-	/*
-		graphqlHandler := s.handleGraphql().ServeHTTP
-		router.Get("/graphql", graphqlHandler)
-		router.Post("/graphql", graphqlHandler)
-	*/
+	graphqlHandler := handleGraphql(logger, db).ServeHTTP
+	router.Get("/graphql", graphqlHandler)
+	router.Post("/graphql", graphqlHandler)
 
 	logger.Info("application started, listening", zap.String("port", port))
 	if err := http.ListenAndServe(":"+port, router); err != nil {
@@ -74,4 +76,30 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"health":"ok"}`))
+}
+
+func handleGraphql(logger *zap.Logger, db *firestoreDB) http.Handler {
+	config := Config{
+		Resolvers: &Resolver{logger, db},
+	}
+
+	config.Directives.IsLoggedIn = func(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
+		return next(ctx)
+	}
+
+	srv := handler.New(
+		NewExecutableSchema(config),
+	)
+
+	srv.AddTransport(transport.POST{})
+	srv.AddTransport(transport.GET{})
+	srv.AddTransport(transport.Options{})
+	srv.AddTransport(transport.MultipartForm{
+		MaxUploadSize: 50 * 1024 * 1024,
+		MaxMemory:     64 * 1024 * 1024,
+	})
+
+	srv.Use(extension.Introspection{})
+
+	return srv
 }

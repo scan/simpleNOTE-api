@@ -36,6 +36,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Account() AccountResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -86,6 +87,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type AccountResolver interface {
+	Notes(ctx context.Context, obj *Account, first int, skip int, after *string) (*NoteConnection, error)
+}
 type MutationResolver interface {
 	CreateNote(ctx context.Context, note NoteInput) (*Note, error)
 	EditNote(ctx context.Context, id string, note NoteInput) (*Note, error)
@@ -369,7 +373,7 @@ type Note implements Node {
 }
 
 type NoteEdge {
-    node: Node!
+    node: Note!
     cursor: Cursor!
 }
 
@@ -576,8 +580,8 @@ func (ec *executionContext) _Account_notes(ctx context.Context, field graphql.Co
 		Object:     "Account",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
@@ -590,7 +594,7 @@ func (ec *executionContext) _Account_notes(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Notes, nil
+		return ec.resolvers.Account().Notes(rctx, obj, args["first"].(int), args["skip"].(int), args["after"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1062,9 +1066,9 @@ func (ec *executionContext) _NoteEdge_node(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(Node)
+	res := resTmp.(*Note)
 	fc.Result = res
-	return ec.marshalNNode2githubᚗcomᚋscanᚋsimpleNOTEᚑapiᚐNode(ctx, field.Selections, res)
+	return ec.marshalNNote2ᚖgithubᚗcomᚋscanᚋsimpleNOTEᚑapiᚐNote(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _NoteEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *NoteEdge) (ret graphql.Marshaler) {
@@ -2521,13 +2525,22 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 		case "email":
 			out.Values[i] = ec._Account_email(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "notes":
-			out.Values[i] = ec._Account_notes(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Account_notes(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3090,16 +3103,6 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNNode2githubᚗcomᚋscanᚋsimpleNOTEᚑapiᚐNode(ctx context.Context, sel ast.SelectionSet, v Node) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Node(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNNote2githubᚗcomᚋscanᚋsimpleNOTEᚑapiᚐNote(ctx context.Context, sel ast.SelectionSet, v Note) graphql.Marshaler {
 	return ec._Note(ctx, sel, &v)
 }
@@ -3112,6 +3115,10 @@ func (ec *executionContext) marshalNNote2ᚖgithubᚗcomᚋscanᚋsimpleNOTEᚑa
 		return graphql.Null
 	}
 	return ec._Note(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNNoteConnection2githubᚗcomᚋscanᚋsimpleNOTEᚑapiᚐNoteConnection(ctx context.Context, sel ast.SelectionSet, v NoteConnection) graphql.Marshaler {
+	return ec._NoteConnection(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNNoteConnection2ᚖgithubᚗcomᚋscanᚋsimpleNOTEᚑapiᚐNoteConnection(ctx context.Context, sel ast.SelectionSet, v *NoteConnection) graphql.Marshaler {

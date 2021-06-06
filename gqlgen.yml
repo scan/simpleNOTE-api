@@ -15,3 +15,10 @@ models:
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID
+  Account:
+    fields:
+      notes:
+        resolver: true
+  Note:
+    model:
+      - github.com/scan/simpleNOTE-api.Note

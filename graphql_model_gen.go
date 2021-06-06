@@ -2,10 +2,6 @@
 
 package main
 
-import (
-	"time"
-)
-
 type Node interface {
 	IsNode()
 }
@@ -15,23 +11,13 @@ type Account struct {
 	Notes *NoteConnection `json:"notes"`
 }
 
-type Note struct {
-	ID         string     `json:"id"`
-	Title      string     `json:"title"`
-	Contents   *string    `json:"contents"`
-	CreatedAt  time.Time  `json:"createdAt"`
-	ModifiedAt *time.Time `json:"modifiedAt"`
-}
-
-func (Note) IsNode() {}
-
 type NoteConnection struct {
 	Edges    []*NoteEdge `json:"edges"`
 	PageInfo *PageInfo   `json:"pageInfo"`
 }
 
 type NoteEdge struct {
-	Node   Node   `json:"node"`
+	Node   *Note  `json:"node"`
 	Cursor string `json:"cursor"`
 }
 
